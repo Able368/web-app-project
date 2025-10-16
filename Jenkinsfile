@@ -1,48 +1,27 @@
 pipeline {
   agent any
 
-  environment {
-    // If you have NODE_VERSION tool configured in Jenkins, use it; otherwise agent needs node installed
-    NODE_ENV = 'test'
-  }
-
   stages {
     stage('Checkout') {
-      steps {
-        // checkout the repo that contains this Jenkinsfile
-        checkout scm
-      }
+      steps { checkout scm }
     }
 
     stage('Install') {
       steps {
-        // install dependencies
-        sh 'npm ci'   // or 'npm install' if package-lock.json not present
-      }
-    }
-
-    stage('Build') {
-      steps {
-        // if you have a build step e.g., transpile
-        // sh 'npm run build'
-        echo 'No build step configured; skip'
+        sh 'npm ci || npm install'
       }
     }
 
     stage('Test') {
       steps {
-        // ensure reports directory exists (jest will create it)
         sh 'mkdir -p reports'
-        // run tests, jest configured to output JUnit XML (see package.json or jest.config.js)
         sh 'npm test'
       }
-
       post {
         always {
-          // publish test results (JUnit XML)
+          // Publish JUnit-compatible test report(s)
           junit allowEmptyResults: false, testResults: 'reports/*.xml'
-
-          // archive raw reports just in case
+          // Optionally archive the raw xml
           archiveArtifacts artifacts: 'reports/*.xml', fingerprint: true
         }
       }
@@ -50,15 +29,7 @@ pipeline {
   }
 
   post {
-    success {
-      echo "Pipeline succeeded"
-    }
-    failure {
-      echo "Pipeline failed"
-    }
-    always {
-      // optional: cleanup
-      sh 'ls -la'
-    }
+    success { echo "Pipeline succeeded" }
+    failure { echo "Pipeline failed — check test results" }
   }
 }

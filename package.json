@@ -1,0 +1,9 @@
+  GNU nano 7.2                                                 package.json                                                          {
+  "scripts": {
+    "test": "jest --runInBand --reporters=default --reporters=jest-junit"
+  },
+  "jest-junit": {
+    "outputDirectory": "reports",
+    "outputName": "jest-junit.xml"
+  }
+}
